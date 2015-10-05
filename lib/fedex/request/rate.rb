@@ -32,10 +32,18 @@ module Fedex
 
       # Add information for shipments
       def add_requested_shipment(xml)
+        shipping_options = {
+          :drop_off_type => "REGULAR_PICKUP",
+          :packaging_type => "YOUR_PACKAGING",
+          :ship_timestamp => Time.now
+        }.merge(@shipping_options)
+
         xml.RequestedShipment{
-          xml.DropoffType @shipping_options[:drop_off_type] ||= "REGULAR_PICKUP"
+          xml.ShipTimestamp shipping_options[:ship_timestamp].strftime("%Y-%m-%dT%H:%M:%S%:z")
+          xml.DropoffType shipping_options.delete(:drop_off_type)
           xml.ServiceType service_type if service_type
-          xml.PackagingType @shipping_options[:packaging_type] ||= "YOUR_PACKAGING"
+          xml.PackagingType shipping_options.delete(:packaging_type)
+
           add_shipper(xml)
           add_recipient(xml)
           add_shipping_charges_payment(xml)
